@@ -1,7 +1,9 @@
 package dpf
 
 // Testing in C the time goes from 7 to 4 seconds for 1000000 with the O3 flag
-// Since cgo removes all optimization flags we first compile a (optimized) static library and then link it
+// Since cgo removes all optimization flags we first compile a (optimized)
+// static library and then link it.
+// Simon Langowski spent many hours debugging this.
 
 // #cgo CFLAGS: -I${SRCDIR}/include
 // #cgo LDFLAGS: ${SRCDIR}/src/libdpf.a -lcrypto -lssl -lm

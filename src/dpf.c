@@ -7,6 +7,7 @@
 // Implementation is partially based on:
 // - https://github.com/SabaEskandarian/Express/tree/master/v2
 // - https://github.com/ucbrise/dory/blob/master/src/c/dpf.h
+// - https://github.com/sachaservan/private-ann/tree/main/pir/dpfc
 
 #include "../include/dpf.h"
 #include "../include/mmo.h"
