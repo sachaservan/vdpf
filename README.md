@@ -10,7 +10,7 @@ Implementation of VDPFs in C with a Go wrapper. See the [paper](https://eprint.i
 
 ## Getting everything to run (tested on Ubuntu, CentOS, and MacOS)
 
-|0) Install dependencies (Ubuntu): | 0) Install dependencies (CentOS):|
+|Install dependencies (Ubuntu): | Install dependencies (CentOS):|
 |--------------|-----------|
 |```sudo apt-get install build-essential``` |  ```sudo yum groupinstall 'Development Tools'```|
 |```sudo apt-get install cmake```| ```sudo yum install cmake```|
@@ -46,7 +46,7 @@ See also [```dpf_test.go```](dpf_test.go)
 As such, no portion of the code should be used in any real-world or production setting!</b>
 
 ## License
-Copyright © 2022 Sacha Servan-Schreiber
+Copyright © 2022 Sacha Servan-Schreiber and Simon Langowski
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
