@@ -22,9 +22,6 @@ func TestCorrectPointFunctionTwoServer(t *testing.T) {
 		// fmt.Printf("index  %v\n", specialIndex)
 		keyA, keyB := client.GenDPFKeys(specialIndex, 64)
 
-		// fmt.Printf("keyA = %v\n", keyA)
-		// fmt.Printf("keyB = %v\n", keyB)
-
 		// simulate the server
 		server := ServerDPFInitialize(client.PrfKey)
 
