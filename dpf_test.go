@@ -204,10 +204,12 @@ func Benchmark2Party64BitVerifiableKeywordEval(b *testing.B) {
 
 func BenchmarkDPFGen(b *testing.B) {
 
-	client := ClientDPFInitialize()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
+
+		client := ClientDPFInitialize()
 		client.GenDPFKeys(1, 64)
+		DestroyDPFContext(client.ctx)
 	}
 }
