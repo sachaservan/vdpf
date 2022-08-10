@@ -24,13 +24,8 @@ type Vdpf struct {
 	H2    Hash
 }
 
-func ClientDPFInitialize() *Dpf {
-	randKey := PrfKey{}
-	_, err := rand.Read(randKey[:])
-	if err != nil {
-		panic("Error generating prf randomness")
-	}
-	return &Dpf{randKey, InitDPFContext(randKey[:])}
+func ClientDPFInitialize(prfKey PrfKey) *Dpf {
+	return &Dpf{prfKey, InitDPFContext(prfKey[:])}
 }
 
 func ServerDPFInitialize(key PrfKey) *Dpf {
