@@ -101,17 +101,20 @@ func TestCorrectVerifiablePointFunctionTwoServer(t *testing.T) {
 
 		specialIndex := uint64(rand.Intn(num))
 
+		hashKeys := GenerateVDPFHashKeys()
+		prfKey := GeneratePRFKey()
+
+		// simulate the server
+		server := ServerVDPFInitialize(prfKey, hashKeys)
+
 		// generate fss Keys on client
-		client := ClientVDPFInitialize()
+		client := ClientVDPFInitialize(prfKey, hashKeys)
 
 		// fmt.Printf("index  %v\n", specialIndex)
 		keyA, keyB := client.GenVDPFKeys(specialIndex, 64)
 
 		// fmt.Printf("keyA = %v\n", keyA)
 		// fmt.Printf("keyB = %v\n", keyB)
-
-		// simulate the server
-		server := ServerVDPFInitialize(client.PrfKey, client.H1Key, client.H2Key)
 
 		indices := make([]uint64, num)
 		for i := 0; i < num; i++ {
@@ -188,9 +191,12 @@ func Benchmark2PartyFullDomainEval(b *testing.B) {
 
 func Benchmark2Party64BitVerifiableKeywordEval(b *testing.B) {
 
-	client := ClientVDPFInitialize()
+	hashKeys := GenerateVDPFHashKeys()
+	prfKey := GeneratePRFKey()
+
+	client := ClientVDPFInitialize(prfKey, hashKeys)
 	keyA, _ := client.GenDPFKeys(1, 64)
-	server := ServerVDPFInitialize(client.PrfKey, client.H1Key, client.H2Key)
+	server := ServerVDPFInitialize(prfKey, hashKeys)
 
 	indices := make([]uint64, 1)
 	indices[0] = 1

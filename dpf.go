@@ -37,33 +37,40 @@ func ServerDPFInitialize(key PrfKey) *Dpf {
 	return &Dpf{key, InitDPFContext(key[:])}
 }
 
-func ClientVDPFInitialize() *Vdpf {
+func GenerateVDPFHashKeys() [2]HashKey {
+	var hashKeys [2]HashKey
+
+	_, err := rand.Read(hashKeys[0][:])
+	if err != nil {
+		panic("Error generating randomness")
+	}
+	_, err = rand.Read(hashKeys[1][:])
+	if err != nil {
+		panic("Error generating randomness")
+	}
+
+	return hashKeys
+}
+
+func GeneratePRFKey() PrfKey {
 	randKey := PrfKey{}
-	var randHashKeys [2]HashKey
 	_, err := rand.Read(randKey[:])
 	if err != nil {
 		panic("Error generating randomness")
 	}
-	_, err = rand.Read(randHashKeys[0][:])
-	if err != nil {
-		panic("Error generating randomness")
-	}
-	_, err = rand.Read(randHashKeys[1][:])
-	if err != nil {
-		panic("Error generating randomness")
-	}
-
-	prfctx, hash1, hash2 := InitVDPFContext(randKey[:], randHashKeys)
-	return &Vdpf{Dpf{randKey, prfctx}, randHashKeys[0], randHashKeys[1], hash1, hash2}
+	return randKey
 }
 
-func ServerVDPFInitialize(key PrfKey, hkey1 HashKey, hkey2 HashKey) *Vdpf {
-	var hashKeys [2]HashKey
-	hashKeys[0] = hkey1
-	hashKeys[1] = hkey2
+func ClientVDPFInitialize(prfKey PrfKey, hashKeys [2]HashKey) *Vdpf {
+
+	prfctx, hash1, hash2 := InitVDPFContext(prfKey[:], hashKeys)
+	return &Vdpf{Dpf{prfKey, prfctx}, hashKeys[0], hashKeys[1], hash1, hash2}
+}
+
+func ServerVDPFInitialize(key PrfKey, hashKeys [2]HashKey) *Vdpf {
 
 	prfctx, hash1, hash2 := InitVDPFContext(key[:], hashKeys)
-	return &Vdpf{Dpf{key, prfctx}, hkey1, hkey2, hash1, hash2}
+	return &Vdpf{Dpf{key, prfctx}, hashKeys[0], hashKeys[1], hash1, hash2}
 }
 
 func (dpf *Dpf) Free() {

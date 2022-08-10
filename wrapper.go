@@ -126,8 +126,6 @@ func (dpf *Dpf) BatchEval(key *DPFKey, indices []uint64) []byte {
 }
 
 func (vdpf *Vdpf) BatchVerEval(key *DPFKey, indices []uint64) ([]byte, []byte) {
-	// 	extern void genVDPF(EVP_CIPHER_CTX *ctx, struct Hash *hash0, int size, uint64_t index, unsigned char* k0, unsigned char *k1);
-	// extern void batchEvalVDPF(EVP_CIPHER_CTX *ctx, struct Hash *hash1, struct Hash *hash2, int size, bool b, unsigned char* k, uint64_t *in, size_t inl, uint64_t* out, uint8_t*pi);
 
 	keySize := getRequiredKeySize(key.RangeSize)
 	if len(key.Bytes) != int(keySize) {
