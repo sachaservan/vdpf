@@ -244,10 +244,10 @@ void batchEvalVDPF(
 
 		uint128_t res = convert(&seeds[size]);
 
-		if (bit == 1)
+		if (bits[size] == 1)
 		{
 			// correction word
-			res = res ^ convert((uint128_t *)&k[18 * size + 18]);
+			res = res ^ convert((uint128_t *)&k[INDEX_LASTCW]);
 		}
 
 		// copy block to byte output
@@ -357,6 +357,9 @@ void fullDomainVDPF(
 			res = res ^ convert((uint128_t *)&k[INDEX_LASTCW]);
 		}
 
+		// copy block to byte output
+		outBlocks[i] = res;
+
 		// *********************************
 		// START: DPF verification code
 		// *********************************
@@ -386,9 +389,6 @@ void fullDomainVDPF(
 		// *********************************
 		// END: DPF verification code
 		// *********************************
-
-		// copy block to byte output
-		outBlocks[i] = res;
 	}
 
 	// VDPF output hash
