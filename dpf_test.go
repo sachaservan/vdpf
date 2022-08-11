@@ -16,8 +16,10 @@ func TestCorrectPointFunctionTwoServer(t *testing.T) {
 
 		specialIndex := uint64(rand.Intn(num))
 
+		prfKey := GeneratePRFKey()
+
 		// generate fss Keys on client
-		client := ClientDPFInitialize()
+		client := ClientDPFInitialize(prfKey)
 
 		// fmt.Printf("index  %v\n", specialIndex)
 		keyA, keyB := client.GenDPFKeys(specialIndex, 64)
@@ -59,8 +61,10 @@ func TestCorrectPointFunctionTwoServerFullDomain(t *testing.T) {
 		num := 1 << 15
 		specialIndex := uint64(rand.Intn(num))
 
+		prfKey := GeneratePRFKey()
+
 		// generate fss Keys on client
-		client := ClientDPFInitialize()
+		client := ClientDPFInitialize(prfKey)
 
 		// fmt.Printf("index  %v\n", specialIndex)
 		keyA, keyB := client.GenDPFKeys(specialIndex, 15)
@@ -146,9 +150,55 @@ func TestCorrectVerifiablePointFunctionTwoServer(t *testing.T) {
 	}
 }
 
+func TestCorrectVerifiablePointFunctionFullDomain(t *testing.T) {
+
+	for trial := 0; trial < numTrials; trial++ {
+
+		num := 1 << 15
+		specialIndex := uint64(rand.Intn(num))
+
+		hashKeys := GenerateVDPFHashKeys()
+		prfKey := GeneratePRFKey()
+
+		// generate fss Keys on client
+		client := ClientVDPFInitialize(prfKey, hashKeys)
+
+		// fmt.Printf("index  %v\n", specialIndex)
+		keyA, keyB := client.GenVDPFKeys(specialIndex, 15)
+
+		// fmt.Printf("keyA = %v\n", keyA)
+		// fmt.Printf("keyB = %v\n", keyB)
+
+		// simulate the server
+		server := ServerVDPFInitialize(prfKey, hashKeys)
+
+		ans0 := server.FullDomainEval(keyA)
+		ans1 := server.FullDomainEval(keyB)
+
+		// fmt.Printf("ans0 = %v\n", ans0)
+		// fmt.Printf("ans1 = %v\n", ans1)
+		for i := 0; i < num; i++ {
+
+			// fmt.Printf("ans0 = %v\n", ans0[i])
+			// fmt.Printf("ans1 = %v\n", ans1[i])
+
+			sum := ans0[i] ^ ans1[i]
+
+			if uint64(i) == specialIndex && uint(sum) != 1 {
+				t.Fatalf("Expected: %v Got: %v", 1, sum)
+			}
+
+			if uint64(i) != specialIndex && sum != 0 {
+				t.Fatalf("Expected: 0 Got: %v", sum)
+			}
+		}
+	}
+}
+
 func Benchmark2PartyServerInit(b *testing.B) {
 
-	fClient := ClientDPFInitialize()
+	prfKey := GeneratePRFKey()
+	fClient := ClientDPFInitialize(prfKey)
 
 	b.ResetTimer()
 
@@ -159,7 +209,8 @@ func Benchmark2PartyServerInit(b *testing.B) {
 
 func Benchmark2Party64BitKeywordEval(b *testing.B) {
 
-	client := ClientDPFInitialize()
+	prfKey := GeneratePRFKey()
+	client := ClientDPFInitialize(prfKey)
 	keyA, _ := client.GenDPFKeys(1, 64)
 	server := ServerDPFInitialize(client.PrfKey)
 
@@ -175,7 +226,8 @@ func Benchmark2Party64BitKeywordEval(b *testing.B) {
 
 func Benchmark2PartyFullDomainEval(b *testing.B) {
 
-	client := ClientDPFInitialize()
+	prfKey := GeneratePRFKey()
+	client := ClientDPFInitialize(prfKey)
 	keyA, _ := client.GenDPFKeys(1, 20)
 	server := ServerDPFInitialize(client.PrfKey)
 
@@ -212,9 +264,11 @@ func BenchmarkDPFGen(b *testing.B) {
 
 	b.ResetTimer()
 
+	prfKey := GeneratePRFKey()
+
 	for i := 0; i < b.N; i++ {
 
-		client := ClientDPFInitialize()
+		client := ClientDPFInitialize(prfKey)
 		client.GenDPFKeys(1, 64)
 		DestroyDPFContext(client.ctx)
 	}
