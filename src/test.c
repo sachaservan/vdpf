@@ -62,6 +62,13 @@ void testVDPF()
 
     X[0] = secretIndex;
 
+    uint128_t share0AtSecretIndex = 0;
+    uint128_t share1AtSecretIndex = 0;
+
+    //************************************************
+    // Test point-by-pont evaluation
+    //************************************************
+
     uint128_t *shares0 = malloc(sizeof(uint128_t) * L);
     uint128_t *shares1 = malloc(sizeof(uint128_t) * L);
     uint128_t pi0[outblocks];
@@ -96,7 +103,10 @@ void testVDPF()
     double time_taken = ((double)t) / (CLOCKS_PER_SEC / 1000.0); // ms
     printf("VDPF eval time (total) %f ms\n", time_taken);
 
-    if (((shares0[0] + shares1[0]) % FIELDSIZE) != 1)
+    share0AtSecretIndex = shares0[0];
+    share1AtSecretIndex = shares1[0];
+
+    if (((share0AtSecretIndex + share1AtSecretIndex) % FIELDSIZE) != 1)
     {
         printf("FAIL (zero)\n");
         exit(0);
@@ -110,8 +120,6 @@ void testVDPF()
         }
     }
 
-    free(vk0);
-    free(vk1);
     free(X);
     printf("DONE\n\n");
 
@@ -125,12 +133,9 @@ void testVDPF()
 
     size = FULLEVALDOMAIN; // evaluation will result in 2^size points
     int outl = 1 << size;
-    secretIndex = randIndex();
 
-    vk0 = malloc(INDEX_LASTCW + 16 + 16 * (outblocks));
-    vk1 = malloc(INDEX_LASTCW + 16 + 16 * (outblocks));
-    genVDPF(ctx, mmo_hash1, size, secretIndex, vk0, vk1);
     destroyMMOHash(mmo_hash1);
+    destroyMMOHash(mmo_hash2);
 
     shares0 = malloc(sizeof(uint128_t) * outl);
     shares1 = malloc(sizeof(uint128_t) * outl);
@@ -160,6 +165,18 @@ void testVDPF()
             printf("FAIL (pi0 =/= pi1)\n");
             exit(0);
         }
+    }
+
+    if (shares0[secretIndex] % FIELDSIZE != share0AtSecretIndex % FIELDSIZE)
+    {
+        printf("FAIL shares are different when evaluated on full domain\n");
+        exit(0);
+    }
+
+    if (shares1[secretIndex] % FIELDSIZE != share1AtSecretIndex % FIELDSIZE)
+    {
+        printf("FAIL shares are different when evaluated on full domain\n");
+        exit(0);
     }
 
     if (((shares0[secretIndex] + shares1[secretIndex]) % FIELDSIZE) != 1)
@@ -212,6 +229,9 @@ void testDPF()
 
     X[0] = secretIndex;
 
+    uint128_t share0AtSecretIndex = 0;
+    uint128_t share1AtSecretIndex = 0;
+
     //************************************************
     // Test point-by-pont evaluation
     //************************************************
@@ -228,11 +248,15 @@ void testDPF()
 
     batchEvalDPF(ctx, size, true, k1, X, L, (uint8_t *)shares1);
 
-    if (((shares0[0] + shares1[0]) % FIELDSIZE) != 1)
+    share0AtSecretIndex = shares0[0];
+    share1AtSecretIndex = shares1[0];
+
+    if (((share0AtSecretIndex + share1AtSecretIndex) % FIELDSIZE) != 1)
     {
         printf("FAIL (zero)\n");
         exit(0);
     }
+
     for (size_t i = 1; i < L; i++)
     {
         if (((shares0[i] + shares1[i]) % FIELDSIZE) != 0)
@@ -243,8 +267,6 @@ void testDPF()
     }
     free(shares0);
     free(shares1);
-    free(k0);
-    free(k1);
     free(X);
     printf("DONE\n\n");
 
@@ -255,10 +277,6 @@ void testDPF()
 
     size = FULLEVALDOMAIN; // evaluation will result in 2^size points
     int outl = 1 << size;
-    secretIndex = randIndex();
-    k0 = malloc(INDEX_LASTCW + 16);
-    k1 = malloc(INDEX_LASTCW + 16);
-    genDPF(ctx, size, secretIndex, k0, k1);
 
     // printf("Full domain = %i\n", outl);
 
@@ -273,6 +291,18 @@ void testDPF()
     fullDomainDPF(ctx, size, true, k1, (uint8_t *)shares1);
 
     printf("DPF full-domain eval time (total) %f ms\n", time_taken);
+
+    if (shares0[secretIndex] % FIELDSIZE != share0AtSecretIndex % FIELDSIZE)
+    {
+        printf("FAIL shares are different when evaluated on full domain\n");
+        exit(0);
+    }
+
+    if (shares1[secretIndex] % FIELDSIZE != share1AtSecretIndex % FIELDSIZE)
+    {
+        printf("FAIL shares are different when evaluated on full domain\n");
+        exit(0);
+    }
 
     if (((shares0[secretIndex] + shares1[secretIndex]) % FIELDSIZE) != 1)
     {
