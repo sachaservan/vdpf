@@ -282,13 +282,18 @@ void fullDomainVDPF(
 
 	int treeSize = 2 * numLeaves - 1;
 
-	uint128_t *seeds = malloc(sizeof(uint128_t) * treeSize); // treesize too big to allocate on stack
+	// treeSize too big to allocate on stack
+	uint128_t *seeds = malloc(sizeof(uint128_t) * treeSize);
 	int *bits = malloc(sizeof(int) * treeSize);
 	uint128_t sCW[maxLayer + 1];
 	int tCW0[maxLayer + 1];
 	int tCW1[maxLayer + 1];
 	uint128_t cs[4];
 	uint128_t pi[4];
+
+	uint128_t hashinput[4];
+	uint128_t tpi[4];
+	uint128_t cpi[4];
 
 	memcpy(seeds, &k[1], 16);
 	bits[0] = b;
@@ -303,12 +308,8 @@ void fullDomainVDPF(
 	memcpy(cs, &k[INDEX_LASTCW + 16], 16 * (mmo_hash1->outblocks));
 	memcpy(pi, &k[INDEX_LASTCW + 16], 16 * (mmo_hash1->outblocks)); // pi = cs
 
-	uint128_t hashinput[mmo_hash1->outblocks];
-	uint128_t tpi[mmo_hash1->outblocks];
-	uint128_t cpi[mmo_hash1->outblocks];
 	uint128_t sL, sR;
 	int tL, tR;
-
 	for (int i = 1; i < treeSize; i += 2)
 	{
 		int parentIndex = 0;
@@ -359,10 +360,12 @@ void fullDomainVDPF(
 		// *********************************
 		// START: DPF verification code
 		// *********************************
-		int bit = seed_lsb(seeds[size]);
+		int bit = seed_lsb(seeds[index]);
 
 		hashinput[0] = index;
-		hashinput[1] = seeds[size];
+		hashinput[1] = seeds[index];
+		hashinput[2] = 0;
+		hashinput[3] = 0;
 
 		// step 1: H(seeds[size]||X[l])
 		mmoHash2to4(mmo_hash1, (uint8_t *)&hashinput[0], (uint8_t *)&tpi[0]);
@@ -373,7 +376,7 @@ void fullDomainVDPF(
 		hashinput[2] = pi[2] ^ correct(tpi[2], cs[2], bit);
 		hashinput[3] = pi[3] ^ correct(tpi[3], cs[3], bit);
 
-		// step 3: comptue pi^H(pi^tpi)
+		// step 3: comptue pi^H'(pi^tpi)
 		mmoHash4to4(mmo_hash2, (uint8_t *)&hashinput[0], (uint8_t *)&cpi[0]);
 
 		pi[0] ^= cpi[0];
@@ -393,7 +396,7 @@ void fullDomainVDPF(
 	sha_256_init(&sha_256, hash);
 	sha_256_write(&sha_256, (uint8_t *)&pi[0], sizeof(uint128_t) * 4);
 	sha_256_close(&sha_256);
-	memcpy(proof, hash, 32);
+	memcpy(proof, hash, sizeof(uint8_t) * 32);
 
 	free(bits);
 	free(seeds);
