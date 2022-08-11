@@ -14,8 +14,8 @@ typedef unsigned __int128 uint128_t;
 
 struct Hash
 {
-   EVP_CIPHER_CTX **mmoCtx;
-   size_t outblocks;
+   EVP_CIPHER_CTX *mmoCtx;
+   int outblocks;
 };
 typedef struct hash Hash;
 

@@ -36,22 +36,16 @@ uint128_t *prg(uint128_t seed, uint64_t outblocks)
 
 struct Hash *initMMOHash(uint8_t *seed, uint64_t outblocks)
 {
-    EVP_CIPHER_CTX **mmoCtx = malloc(sizeof(EVP_CIPHER_CTX *) * outblocks);
+    EVP_CIPHER_CTX *mmoCtx = malloc(sizeof(EVP_CIPHER_CTX *));
     struct Hash *hash = malloc(sizeof(struct Hash));
-    uint128_t seedint = 0;
-    memcpy(&seedint, seed, sizeof(uint128_t));
-    uint128_t *seeds = prg(seedint, outblocks); // expand the key into k seeds
 
-    for (size_t k = 0; k < outblocks; k++)
-    {
-        if (!(mmoCtx[k] = EVP_CIPHER_CTX_new()))
-            printf("errors occured in creating context\n");
+    if (!(mmoCtx = EVP_CIPHER_CTX_new()))
+        printf("errors occured in creating context\n");
 
-        if (1 != EVP_EncryptInit_ex(mmoCtx[k], EVP_aes_128_ecb(), NULL, (uint8_t *)&seeds[k], NULL))
-            printf("errors occurred in randomness init\n");
+    if (1 != EVP_EncryptInit_ex(mmoCtx, EVP_aes_128_ecb(), NULL, (uint8_t *)seed, NULL))
+        printf("errors occurred in randomness init\n");
 
-        EVP_CIPHER_CTX_set_padding(mmoCtx[k], 0);
-    }
+    EVP_CIPHER_CTX_set_padding(mmoCtx, 0);
 
     hash->mmoCtx = mmoCtx;
     hash->outblocks = outblocks;
@@ -60,10 +54,7 @@ struct Hash *initMMOHash(uint8_t *seed, uint64_t outblocks)
 
 void destroyMMOHash(struct Hash *hash)
 {
-    for (size_t k = 0; k < hash->outblocks; k++)
-    {
-        EVP_CIPHER_CTX_free(hash->mmoCtx[k]);
-    }
+    EVP_CIPHER_CTX_free(hash->mmoCtx);
     free(hash);
 }
 
@@ -75,17 +66,17 @@ void mmoHash2to4(struct Hash *hash, uint8_t *input, uint8_t *output)
     uint128_t *inputblocks = (uint128_t *)input;
 
     int len = 0;
-    if (1 != EVP_EncryptUpdate(hash->mmoCtx[0], (uint8_t *)&outputblocks[0], &len, (uint8_t *)input, 16 * 2))
-        printf("errors occurred in generating randomness\n");
+    if (1 != EVP_EncryptUpdate(hash->mmoCtx, (uint8_t *)&outputblocks[0], &len, (uint8_t *)input, 16 * 2))
+        printf("errors occurred when hashing\n");
 
     outputblocks[0] ^= inputblocks[0];
     outputblocks[1] ^= inputblocks[1];
 
-    if (1 != EVP_EncryptUpdate(hash->mmoCtx[1], (uint8_t *)&outputblocks[2], &len, (uint8_t *)input, 16 * 2))
-        printf("errors occurred in generating randomness\n");
+    if (1 != EVP_EncryptUpdate(hash->mmoCtx, (uint8_t *)&outputblocks[2], &len, (uint8_t *)outputblocks, 16 * 2))
+        printf("errors occurred when hashing\n");
 
-    outputblocks[2] ^= inputblocks[0];
-    outputblocks[3] ^= inputblocks[0];
+    outputblocks[2] ^= outputblocks[0];
+    outputblocks[3] ^= outputblocks[1];
 }
 
 // Matyas-Meyer-Oseas technique for instantiating a one-way compression function
@@ -96,7 +87,7 @@ void mmoHash4to4(struct Hash *hash, uint8_t *input, uint8_t *output)
     uint128_t *inputblocks = (uint128_t *)input;
 
     int len = 0;
-    if (1 != EVP_EncryptUpdate(hash->mmoCtx[0], (uint8_t *)&outputblocks[0], &len, (uint8_t *)input, 16 * 4))
+    if (1 != EVP_EncryptUpdate(hash->mmoCtx, (uint8_t *)&outputblocks[0], &len, (uint8_t *)input, 16 * 4))
         printf("errors occurred in generating AES hash\n");
 
     outputblocks[0] ^= inputblocks[0];
