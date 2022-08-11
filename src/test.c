@@ -139,7 +139,7 @@ void testVDPF()
     mmo_hash2 = initMMOHash((uint8_t *)&hashkey2, outblocks);
 
     t = clock();
-    fullDomainVDPF(ctx, mmo_hash1, mmo_hash2, size, false, vk0, (uint8_t *)shares0, (uint8_t *)&pi0);
+    fullDomainVDPF(ctx, mmo_hash1, mmo_hash2, size, false, vk0, (uint8_t *)shares0, (uint8_t *)&pi0[0]);
     t = clock() - t;
     time_taken = ((double)t) / (CLOCKS_PER_SEC / 1000.0); // ms
     destroyMMOHash(mmo_hash1);
@@ -147,7 +147,7 @@ void testVDPF()
 
     mmo_hash1 = initMMOHash((uint8_t *)&hashkey1, outblocks);
     mmo_hash2 = initMMOHash((uint8_t *)&hashkey2, outblocks);
-    fullDomainVDPF(ctx, mmo_hash1, mmo_hash2, size, true, vk1, (uint8_t *)shares1, (uint8_t *)&pi1);
+    fullDomainVDPF(ctx, mmo_hash1, mmo_hash2, size, true, vk1, (uint8_t *)shares1, (uint8_t *)&pi1[0]);
     destroyMMOHash(mmo_hash1);
     destroyMMOHash(mmo_hash2);
 
@@ -355,7 +355,7 @@ void testMMO()
 int main(int argc, char **argv)
 {
 
-    int testTrials = 10;
+    int testTrials = 20;
     printf("******************************************\n");
     printf("Testing VDPF\n");
     for (int i = 0; i < testTrials; i++)
