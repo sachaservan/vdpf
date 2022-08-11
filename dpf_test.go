@@ -154,7 +154,9 @@ func TestCorrectVerifiablePointFunctionFullDomain(t *testing.T) {
 
 	for trial := 0; trial < numTrials; trial++ {
 
-		num := 1 << 15
+		rangeSize := 15
+
+		num := 1 << rangeSize
 		specialIndex := uint64(rand.Intn(num))
 
 		hashKeys := GenerateVDPFHashKeys()
@@ -164,7 +166,7 @@ func TestCorrectVerifiablePointFunctionFullDomain(t *testing.T) {
 		client := ClientVDPFInitialize(prfKey, hashKeys)
 
 		// fmt.Printf("index  %v\n", specialIndex)
-		keyA, keyB := client.GenVDPFKeys(specialIndex, 15)
+		keyA, keyB := client.GenVDPFKeys(specialIndex, uint(rangeSize))
 
 		// fmt.Printf("keyA = %v\n", keyA)
 		// fmt.Printf("keyB = %v\n", keyB)
@@ -172,8 +174,13 @@ func TestCorrectVerifiablePointFunctionFullDomain(t *testing.T) {
 		// simulate the server
 		server := ServerVDPFInitialize(prfKey, hashKeys)
 
-		ans0 := server.FullDomainEval(keyA)
-		ans1 := server.FullDomainEval(keyB)
+		ans0, pi0 := server.FullDomainVerEval(keyA)
+		ans1, pi1 := server.FullDomainVerEval(keyB)
+
+		if !bytes.Equal(pi0, pi1) {
+			fmt.Println()
+			t.Fatalf("pi0 =/= p1\n%v\n%v\n", pi0, pi1)
+		}
 
 		// fmt.Printf("ans0 = %v\n", ans0)
 		// fmt.Printf("ans1 = %v\n", ans1)

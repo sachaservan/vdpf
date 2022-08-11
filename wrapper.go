@@ -37,7 +37,7 @@ func InitDPFContext(prfKey []byte) PrfCtx {
 		panic("bad prf key size")
 	}
 
-	p := C.getDPFContext((*C.uchar)(unsafe.Pointer(&prfKey[0])))
+	p := C.getDPFContext((*C.uint8_t)(unsafe.Pointer(&prfKey[0])))
 	return p
 }
 
@@ -45,8 +45,8 @@ func InitVDPFContext(prfKey []byte, hashkeys [2]HashKey) (PrfCtx, Hash, Hash) {
 
 	p := InitDPFContext(prfKey)
 
-	hash1 := C.initMMOHash((*C.uchar)(unsafe.Pointer(&hashkeys[0])), C.uint64_t(HASH1BLOCKOUT))
-	hash2 := C.initMMOHash((*C.uchar)(unsafe.Pointer(&hashkeys[1])), C.uint64_t(HASH2BLOCKOUT))
+	hash1 := C.initMMOHash((*C.uint8_t)(unsafe.Pointer(&hashkeys[0])), C.uint64_t(HASH1BLOCKOUT))
+	hash2 := C.initMMOHash((*C.uint8_t)(unsafe.Pointer(&hashkeys[1])), C.uint64_t(HASH2BLOCKOUT))
 
 	return p, hash1, hash2
 }
@@ -69,8 +69,8 @@ func (dpf *Dpf) GenDPFKeys(specialIndex uint64, rangeSize uint) (*DPFKey, *DPFKe
 		dpf.ctx,
 		C.int(rangeSize),
 		C.uint64_t(specialIndex),
-		(*C.uchar)(unsafe.Pointer(&k0[0])),
-		(*C.uchar)(unsafe.Pointer(&k1[0])),
+		(*C.uint8_t)(unsafe.Pointer(&k0[0])),
+		(*C.uint8_t)(unsafe.Pointer(&k1[0])),
 	)
 
 	return NewDPFKey(k0, rangeSize, 0), NewDPFKey(k1, rangeSize, 1)
@@ -87,8 +87,8 @@ func (vdpf *Vdpf) GenVDPFKeys(specialIndex uint64, rangeSize uint) (*DPFKey, *DP
 		vdpf.H1,
 		C.int(rangeSize),
 		C.uint64_t(specialIndex),
-		(*C.uchar)(unsafe.Pointer(&k0[0])),
-		(*C.uchar)(unsafe.Pointer(&k1[0])),
+		(*C.uint8_t)(unsafe.Pointer(&k0[0])),
+		(*C.uint8_t)(unsafe.Pointer(&k1[0])),
 	)
 
 	return NewDPFKey(k0, rangeSize, 0), NewDPFKey(k1, rangeSize, 1)
@@ -108,7 +108,7 @@ func (dpf *Dpf) BatchEval(key *DPFKey, indices []uint64) []byte {
 		dpf.ctx,
 		C.int(key.RangeSize),
 		C.bool(key.Index == 1),
-		(*C.uchar)(unsafe.Pointer(&key.Bytes[0])),
+		(*C.uint8_t)(unsafe.Pointer(&key.Bytes[0])),
 		(*C.uint64_t)(unsafe.Pointer(&indices[0])),
 		C.uint64_t(len(indices)),
 		(*C.uint8_t)(unsafe.Pointer(&res[0])),
@@ -143,7 +143,7 @@ func (vdpf *Vdpf) BatchVerEval(key *DPFKey, indices []uint64) ([]byte, []byte) {
 		vdpf.H2,
 		C.int(key.RangeSize),
 		C.bool(key.Index == 1),
-		(*C.uchar)(unsafe.Pointer(&key.Bytes[0])),
+		(*C.uint8_t)(unsafe.Pointer(&key.Bytes[0])),
 		(*C.uint64_t)(unsafe.Pointer(&indices[0])),
 		C.uint64_t(len(indices)),
 		(*C.uint8_t)(unsafe.Pointer(&res[0])),
@@ -220,16 +220,17 @@ func (vdpf *Vdpf) FullDomainVerEval(key *DPFKey) ([]byte, []byte) {
 		vdpf.H2,
 		C.int(key.RangeSize),
 		C.bool(key.Index == 1),
-		(*C.uchar)(unsafe.Pointer(&key.Bytes[0])),
+		(*C.uint8_t)(unsafe.Pointer(&key.Bytes[0])),
 		(*C.uint8_t)(unsafe.Pointer(&res[0])),
 		(*C.uint8_t)(unsafe.Pointer(&pi[0])),
 	)
 
 	// skip two uint64 blocks at a time
 	b := 0
-	for i := 0; i < resSize; i += 2 {
+	for i := 0; i < len(res); i += 2 {
 		resBytes[b] = byte(res[i] & 1)
 		b++
 	}
+
 	return resBytes, pi
 }
