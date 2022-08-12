@@ -221,9 +221,10 @@ func Benchmark2Party64BitKeywordEval(b *testing.B) {
 	keyA, _ := client.GenDPFKeys(1, 64)
 	server := ServerDPFInitialize(client.PrfKey)
 
-	indices := make([]uint64, 1)
-	indices[0] = 1
-
+	indices := make([]uint64, 100)
+	for i := 0; i < len(indices); i++ {
+		indices[i] = rand.Uint64()
+	}
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -257,8 +258,10 @@ func Benchmark2Party64BitVerifiableKeywordEval(b *testing.B) {
 	keyA, _ := client.GenDPFKeys(1, 64)
 	server := ServerVDPFInitialize(prfKey, hashKeys)
 
-	indices := make([]uint64, 1)
-	indices[0] = 1
+	indices := make([]uint64, 10)
+	for i := 0; i < len(indices); i++ {
+		indices[i] = rand.Uint64()
+	}
 
 	b.ResetTimer()
 
