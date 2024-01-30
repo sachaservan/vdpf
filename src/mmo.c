@@ -14,7 +14,7 @@ uint128_t *prg(uint128_t seed, uint64_t outblocks)
     if (!(randCtx = EVP_CIPHER_CTX_new()))
         printf("errors occured in creating PRG context\n");
 
-    if (1 != EVP_EncryptInit_ex(randCtx, EVP_aes_128_ecb(), NULL, (uint8_t *)&seed, NULL))
+    if (1 != EVP_EncryptInit_ex(randCtx, EVP_aes_128_ctr(), NULL, (uint8_t *)&seed, NULL))
         printf("errors occured in PRG seeding\n");
 
     EVP_CIPHER_CTX_set_padding(randCtx, 0);
@@ -42,7 +42,7 @@ struct Hash *initMMOHash(uint8_t *seed, uint64_t outblocks)
     if (!(mmoCtx = EVP_CIPHER_CTX_new()))
         printf("errors occured in creating context\n");
 
-    if (1 != EVP_EncryptInit_ex(mmoCtx, EVP_aes_128_ecb(), NULL, (uint8_t *)seed, NULL))
+    if (1 != EVP_EncryptInit_ex(mmoCtx, EVP_aes_128_ctr(), NULL, (uint8_t *)seed, NULL))
         printf("errors occurred in randomness init\n");
 
     EVP_CIPHER_CTX_set_padding(mmoCtx, 0);
